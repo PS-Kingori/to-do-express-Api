@@ -8,7 +8,7 @@ import userRouter from './routes/users.js';
 dotenv.config();
 
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.MONGODB_URI
 
 const app = express();
 
@@ -24,7 +24,7 @@ app.use('/users', userRouter);
 
 
 app.listen(PORT, ()=>{
-    console.log(`listening from port http://localhost:${PORT}`)
+    console.log(`listening from AtlasDB`)
 })
 
 
