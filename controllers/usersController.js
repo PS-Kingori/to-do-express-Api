@@ -1,4 +1,6 @@
 import User from "../models/user.js";
+import bcrypt from "bcrypt";
+import bodyParser from "body-parser";
 
 //GET Users
 
@@ -37,9 +39,6 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
     try {
-
-  
-
     const { name, email, password } = req.body;
     const user = new User({ name, email, password });
 
@@ -56,6 +55,60 @@ export const createUser = async (req, res) => {
     res.status(500).json({ error: err.message });
     }
     };
+
+    //POST
+
+export const registerUser = async (req, res) => {
+  try {
+  const { name, email, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+
+  // Check if a user with the given email already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(409).json({
+      message: "A user with this email already exists."
+    });
+  }
+
+  const user = new User({ name, email, password: hashedPassword });
+
+     
+  await user.save();
+  res.status(201).json(user);
+  } catch (err) {
+  res.status(500).json({ error: err.message });
+  }
+  };
+
+
+//LOGIN
+
+export const loginUser = async (req, res)=>{
+
+  try {
+    const {email, password} = req.body;
+    const currentUser = await User.findOne({email});
+
+    if (!currentUser) {
+      return res.status(400).json({message: "User not found"});
+    } 
+    
+    const isPasswordValid = await bcrypt.compare( password, currentUser.password);
+     if (!isPasswordValid) {
+     return res.status(400).json({message: "Password is invalid"})
+     };
+
+ return res.status(200).json({message: "logged in succesfully", User: `${currentUser.name}`, bcryptHashed_Password: `${currentUser.password}`})
+    
+  } catch (error) {
+    res.status(400).json({message: "Unable to log in. Try again"})
+    
+  }
+
+}
+
+    
 
 
 //DELETE
